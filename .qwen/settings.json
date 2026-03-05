@@ -1,0 +1,61 @@
+{
+  "tools": {
+    "core": [
+      "ReadFileTool",
+      "WriteFileTool",
+      "EditFileTool",
+      "ShellTool",
+      "GlobTool",
+      "GrepTool",
+      "LSTool"
+    ]
+  },
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "timeout": 30000,
+      "trust": true,
+      "description": "Прямой доступ к файлам проекта — чтение, запись, создание"
+    },
+    "git": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-git",
+        "--repository",
+        "."
+      ],
+      "timeout": 30000,
+      "trust": true,
+      "description": "Git-операции: коммиты после каждого шага, diff, просмотр истории"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "timeout": 60000,
+      "trust": true,
+      "description": "Пошаговое обдумывание сложных задач перед написанием кода"
+    }
+  },
+  "model": {
+    "name": "qwen-plus"
+  },
+  "systemPrompt": "Ты — senior Python developer с 10-летним опытом. Ты разрабатываешь проект Disk Space Analyzer строго по шагам из файла DEVELOPMENT_STEPS.md, который находится в корне проекта. Перед началом работы всегда читай SPECIFICATION.md и DEVELOPMENT_STEPS.md.\n\nПРАВИЛА (обязательны к соблюдению):\n- Используй ТОЛЬКО стандартную библиотеку Python 3.10+ — никаких pip install\n- 100% type annotations на всех функциях и классах (совместимость с mypy --strict)\n- Все магические числа и строки — только через core/constants.py\n- Каждый модуль пишется полностью — никаких заглушек # TODO или pass\n- После написания каждого модуля запускай проверку из раздела «Проверка» в DEVELOPMENT_STEPS.md\n- Не переходи к следующему шагу, пока текущий не прошёл проверку\n- Перед написанием модуля — одним предложением объясни его назначение\n- Обрабатывай PermissionError и OSError везде, где идёт работа с ФС\n- Не используй follow_symlinks=True нигде в коде\n- Все файлы сохраняй в UTF-8\n\nСТИЛЬ КОДА:\n- Google-style docstrings для всех публичных функций\n- f-strings для форматирования (не % и не .format)\n- Guard clauses вместо глубокой вложенности if\n- Генераторы вместо накопления списков там, где это экономит память\n- dataclasses с slots=True для моделей\n\nПОСЛЕ КАЖДОГО ШАГА:\n1. Запусти проверку из DEVELOPMENT_STEPS.md\n2. Сообщи результат: «Шаг N завершён, проверка пройдена» или опиши ошибку\n3. Жди явного подтверждения перед переходом к следующему шагу",
+  "mcp": {
+    "allowed": [
+      "filesystem",
+      "git",
+      "sequential-thinking"
+    ]
+  },
+  "approval": "auto-edit",
+  "$version": 3
+}
