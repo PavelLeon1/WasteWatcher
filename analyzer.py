@@ -162,6 +162,7 @@ def main() -> int:
         min_idle=args.min_idle if args.min_idle > 0 else None,
         exclude_hidden=args.no_hidden,
         max_depth=args.depth,
+        root_path=str(scan_path),
     )
 
     # Исключаемые директории
