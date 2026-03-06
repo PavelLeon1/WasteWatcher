@@ -6,6 +6,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
 from core.constants import (
     USELESS_LOW_THRESHOLD,
@@ -184,8 +185,6 @@ class ScanStats:
         self.dir_sizes = {}
         for file in files:
             # Берём родительскую директорию
-            from pathlib import Path
-
             parent = str(Path(file.path).parent)
             self.dir_sizes[parent] = self.dir_sizes.get(parent, 0) + file.size_bytes
 
