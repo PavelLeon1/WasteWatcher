@@ -5,7 +5,6 @@
 """
 
 import json
-import sys
 from datetime import datetime
 from pathlib import Path
 from string import Template
@@ -115,15 +114,10 @@ class ReportBuilder:
             OSError: При ошибке записи файла.
             PermissionError: При отсутствии прав на запись.
         """
-        try:
-            # Создаём родительские директории если нужно
-            self.output_path.parent.mkdir(parents=True, exist_ok=True)
-
-            # Записываем файл
-            self.output_path.write_text(html, encoding="utf-8")
-
-        except (OSError, PermissionError) as e:
-            raise e
+        # Создаём родительские директории если нужно
+        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        # Записываем файл — исключения пробрасываются выше без обёртки
+        self.output_path.write_text(html, encoding="utf-8")
 
 
 def generate_report(
