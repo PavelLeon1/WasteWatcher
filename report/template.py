@@ -80,8 +80,10 @@ TEMPLATE: str = """<!DOCTYPE html>
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 100%;
       margin: 0 auto;
+      padding: 0 24px;
+      box-sizing: border-box;
     }
 
     h1, h2, h3 {
@@ -447,6 +449,10 @@ TEMPLATE: str = """<!DOCTYPE html>
         padding: 10px;
       }
 
+      .container {
+        padding: 0 10px;
+      }
+
       .header {
         flex-direction: column;
         align-items: flex-start;
@@ -591,15 +597,14 @@ TEMPLATE: str = """<!DOCTYPE html>
       <div class="table-wrapper">
         <table id="files-table">
           <colgroup>
-            <col style="width: 4%">
-            <col style="width: 24%">
-            <col style="width: 18%">
             <col style="width: 5%">
+            <col style="width: 30%">
+            <col style="width: 15%">
+            <col style="width: 6%">
             <col style="width: 10%">
-            <col style="width: 9%">
-            <col style="width: 8%">
+            <col style="width: 7%">
             <col style="width: 12%">
-            <col style="width: 10%">
+            <col style="width: 15%">
           </colgroup>
           <thead>
             <tr>
@@ -607,13 +612,10 @@ TEMPLATE: str = """<!DOCTYPE html>
               <th data-sort="path">Path<span class="sort-icon">↕</span></th>
               <th data-sort="name">Name<span class="sort-icon">↕</span></th>
               <th data-sort="extension">Ext<span class="sort-icon">↕</span></th>
-              <th data-sort="size_bytes">Size<span class="sort-icon">↕</span></th>
-              <th data-sort="size_human">Size (human)<span class="sort-icon">↕</span></th>
+              <th data-sort="size_human">Size<span class="sort-icon">↕</span></th>
               <th data-sort="idle_days">Idle Days<span class="sort-icon">↕</span></th>
               <th data-sort="uselessness_index">Uselessness<span class="sort-icon">↕</span></th>
               <th data-sort="uselessness_human">Uselessness (human)<span class="sort-icon">↕</span></th>
-              <th data-sort="atime">Last Access<span class="sort-icon">↕</span></th>
-              <th data-sort="mtime">Modified<span class="sort-icon">↕</span></th>
             </tr>
           </thead>
           <tbody id="table-body">
@@ -770,7 +772,7 @@ TEMPLATE: str = """<!DOCTYPE html>
       const pageData = state.filteredData.slice(start, end);
 
       if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;">No files found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">No files found</td></tr>';
         return;
       }
 
@@ -780,13 +782,10 @@ TEMPLATE: str = """<!DOCTYPE html>
           <td class="path-cell" title="${escapeHtml(file.path || '')}">${escapeHtml(truncatePath(file.path || ''))}</td>
           <td>${escapeHtml(file.name || '')}</td>
           <td>${escapeHtml(file.extension || '')}</td>
-          <td>${file.size_bytes?.toLocaleString() || '0'}</td>
           <td>${escapeHtml(file.size_human || '0 B')}</td>
           <td>${file.idle_days ?? 0}</td>
           <td>${(file.uselessness_index || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
           <td>${escapeHtml(file.uselessness_human || '0.00 MB·days')}</td>
-          <td>${formatDate(file.atime)}</td>
-          <td>${formatDate(file.mtime)}</td>
         </tr>
       `).join('');
 
@@ -996,7 +995,7 @@ TEMPLATE: str = """<!DOCTYPE html>
        ============================================================================= */
     function exportCSV() {
       const headers = [
-        'Path', 'Name', 'Extension', 'Size (bytes)', 'Size (human)',
+        'Path', 'Name', 'Extension', 'Size (human)',
         'Idle Days', 'Uselessness Index', 'Uselessness (human)',
         'Level', 'Last Access', 'Modified', 'Created'
       ];
@@ -1005,7 +1004,6 @@ TEMPLATE: str = """<!DOCTYPE html>
         `"${(file.path || '').replace(/"/g, '""')}"`,
         `"${(file.name || '').replace(/"/g, '""')}"`,
         `"${(file.extension || '').replace(/"/g, '""')}"`,
-        file.size_bytes || 0,
         `"${file.size_human || ''}"`,
         file.idle_days ?? 0,
         file.uselessness_index || 0,
