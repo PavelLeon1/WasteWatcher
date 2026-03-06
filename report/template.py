@@ -187,6 +187,7 @@ TEMPLATE: str = """<!DOCTYPE html>
       position: relative;
       display: flex;
       flex-direction: column;
+      overflow-y: auto;
     }
 
     .chart-title {
@@ -536,10 +537,18 @@ TEMPLATE: str = """<!DOCTYPE html>
       display: flex;
       justify-content: space-between;
       gap: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    .top-files-list li:nth-child(odd) {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .top-files-list li:last-child {
       border-bottom: none;
+      margin-bottom: 0;
     }
 
     .top-file-name {
