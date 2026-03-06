@@ -298,13 +298,15 @@ TEMPLATE: str = """<!DOCTYPE html>
     }
 
     .table-wrapper {
-      overflow-x: auto;
+      overflow-x: hidden;
       max-height: 70vh;
       overflow-y: auto;
+      width: 100%;
     }
 
     table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       font-size: 0.875rem;
     }
@@ -318,7 +320,7 @@ TEMPLATE: str = """<!DOCTYPE html>
     }
 
     th {
-      padding: 15px;
+      padding: 15px 12px;
       text-align: left;
       font-weight: 600;
       color: var(--color-text);
@@ -326,6 +328,8 @@ TEMPLATE: str = """<!DOCTYPE html>
       cursor: pointer;
       user-select: none;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     th:hover {
@@ -345,6 +349,10 @@ TEMPLATE: str = """<!DOCTYPE html>
       padding: 12px 15px;
       border-bottom: 1px solid var(--color-border);
       color: var(--color-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 0;
     }
 
     tbody tr {
@@ -370,7 +378,7 @@ TEMPLATE: str = """<!DOCTYPE html>
 
     /* Path truncation */
     .path-cell {
-      max-width: 400px;
+      max-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -582,6 +590,17 @@ TEMPLATE: str = """<!DOCTYPE html>
     <section class="table-container">
       <div class="table-wrapper">
         <table id="files-table">
+          <colgroup>
+            <col style="width: 4%">
+            <col style="width: 24%">
+            <col style="width: 18%">
+            <col style="width: 5%">
+            <col style="width: 10%">
+            <col style="width: 9%">
+            <col style="width: 8%">
+            <col style="width: 12%">
+            <col style="width: 10%">
+          </colgroup>
           <thead>
             <tr>
               <th data-sort="uselessness_level">Level<span class="sort-icon">↕</span></th>
@@ -862,7 +881,7 @@ TEMPLATE: str = """<!DOCTYPE html>
       } else if (state.data.length > 0) {
         // Extract common path prefix
         const firstPath = state.data[0]?.path || '';
-        scanPath.textContent = firstPath.split(/[\\/]/).slice(0, 3).join('/') || 'Unknown';
+        scanPath.textContent = firstPath.split(/[\\\\/]/).slice(0, 3).join('/') || 'Unknown';
       }
 
       const reportDate = new Date().toLocaleString('ru-RU');
