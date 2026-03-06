@@ -14,6 +14,7 @@ from pathlib import Path
 from core.constants import SCANNER_BATCH_SIZE
 from core.metrics import calculate_idle_days, calculate_uselessness, format_uselessness
 from core.models import FileInfo, ScanStats
+from utils.formatting import human_readable_size
 
 
 def get_file_ctime(stat_result: os.stat_result) -> datetime:
@@ -75,9 +76,6 @@ def build_file_info(
         idle_days = calculate_idle_days(atime)
         uselessness_index = calculate_uselessness(size_bytes, idle_days)
         uselessness_human = format_uselessness(uselessness_index)
-
-        # Импортируем здесь для избежания циклического импорта
-        from utils.formatting import human_readable_size
 
         size_human = human_readable_size(size_bytes)
 
