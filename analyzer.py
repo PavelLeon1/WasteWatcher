@@ -8,11 +8,12 @@ Disk Space Analyzer — точка входа CLI.
 import argparse
 import sys
 import time
+from collections.abc import Generator, Iterable
 from pathlib import Path
 
-from core.filters import build_filter_pipeline
-from core.metrics import assign_uselessness_levels, compute_file_metrics
-from core.models import ScanStats
+from core.filters import FileFilter, build_filter_pipeline
+from core.metrics import assign_uselessness_levels
+from core.models import FileInfo, ScanStats
 from core.scanner import scan_directory
 from report.builder import generate_report
 from utils.formatting import human_readable_size, parse_size_arg
@@ -195,7 +196,7 @@ def main() -> int:
             progress_reporter=progress,
         )
 
-        # Применение фильтров и метрик
+        # Применение фильтров (метрики уже вычислены в scanner.build_file_info())
         filtered = apply_filters_and_metrics(raw_files, filters)
 
         # Материализация списка (нужен для квантилей)
@@ -284,26 +285,26 @@ def main() -> int:
     return 0
 
 
-def apply_filters_and_metrics(files, filters):
+def apply_filters_and_metrics(
+    files: Iterable[FileInfo],
+    filters: list[FileFilter],
+) -> Generator[FileInfo, None, None]:
     """
-    Применяет фильтры и вычисляет метрики для каждого файла.
+    Применяет фильтры к потоку файлов.
+
+    Метрики уже вычислены в scanner.build_file_info() —
+    здесь только фильтрация.
 
     Args:
         files: Генератор FileInfo из сканера.
         filters: Список фильтров.
 
     Yields:
-        FileInfo с применёнными фильтрами и вычисленными метриками.
+        FileInfo, прошедшие все фильтры.
     """
     for file in files:
-        # Применение фильтров (AND-логика)
         if filters and not all(f(file) for f in filters):
             continue
-
-        # Вычисление метрик (если ещё не вычислены)
-        if file.idle_days == 0 and file.uselessness_index == 0:
-            compute_file_metrics(file)
-
         yield file
 
 
