@@ -626,7 +626,8 @@ TEMPLATE: str = """<!DOCTYPE html>
           <option value="25">25 per page</option>
           <option value="50" selected>50 per page</option>
           <option value="100">100 per page</option>
-          <option value="0">Show all</option>
+          <option value="250">250 per page</option>
+          <option value="500">500 (slow)</option>
         </select>
         <button class="btn btn-secondary" id="export-csv-btn" title="Export to CSV">
           📥 Export CSV
@@ -809,29 +810,37 @@ TEMPLATE: str = """<!DOCTYPE html>
        ============================================================================= */
     function renderTable() {
       const tbody = document.getElementById('table-body');
-      const start = state.perPage === 0 ? 0 : (state.currentPage - 1) * state.perPage;
-      const end = state.perPage === 0 ? state.filteredData.length : start + state.perPage;
+      const perPage = state.perPage;
+      const start = (state.currentPage - 1) * perPage;
+      const end = start + perPage;
       const pageData = state.filteredData.slice(start, end);
 
       if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">No files found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--color-text-muted)">Файлы не найдены</td></tr>';
+        renderPagination();
         return;
       }
 
-      tbody.innerHTML = pageData.map(file => `
-        <tr class="useless-${file.uselessness_level || 'low'}">
-          <td>${getLevelIcon(file.uselessness_level)}</td>
-          <td class="path-cell" title="${escapeHtml(file.path || '')}">${escapeHtml(truncatePath(file.path || ''))}</td>
-          <td>${escapeHtml(file.name || '')}</td>
-          <td>${escapeHtml(file.extension || '')}</td>
-          <td>${escapeHtml(file.size_human || '0 B')}</td>
-          <td>${file.idle_days ?? 0}</td>
-          <td>${(file.uselessness_index || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-          <td>${escapeHtml(file.uselessness_human || '0.00 MB·days')}</td>
-        </tr>
-      `).join('');
+      // Индикатор загрузки
+      tbody.style.opacity = '0.4';
 
-      renderPagination();
+      requestAnimationFrame(() => {
+        tbody.innerHTML = pageData.map(file => `
+          <tr class="useless-${file.uselessness_level || 'low'}">
+            <td>${getLevelIcon(file.uselessness_level)}</td>
+            <td class="path-cell" title="${escapeHtml(file.path || '')}">${escapeHtml(truncatePath(file.path || ''))}</td>
+            <td>${escapeHtml(file.name || '')}</td>
+            <td>${escapeHtml(file.extension || '')}</td>
+            <td>${escapeHtml(file.size_human || '0 B')}</td>
+            <td>${file.idle_days ?? 0}</td>
+            <td>${(file.uselessness_index || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+            <td>${escapeHtml(file.uselessness_human || '0.00 MB·days')}</td>
+          </tr>
+        `).join('');
+
+        tbody.style.opacity = '1';
+        renderPagination();
+      });
     }
 
     function getLevelIcon(level) {
@@ -849,15 +858,15 @@ TEMPLATE: str = """<!DOCTYPE html>
     function renderPagination() {
       const pagination = document.getElementById('pagination');
       const totalItems = state.filteredData.length;
-      const totalPages = state.perPage === 0 ? 1 : Math.ceil(totalItems / state.perPage);
+      const totalPages = Math.ceil(totalItems / state.perPage);
 
       if (totalPages <= 1) {
         pagination.innerHTML = `<span class="pagination-info">${totalItems} files total</span>`;
         return;
       }
 
-      const start = state.perPage === 0 ? 1 : (state.currentPage - 1) * state.perPage + 1;
-      const end = state.perPage === 0 ? totalItems : Math.min(state.currentPage * state.perPage, totalItems);
+      const start = (state.currentPage - 1) * state.perPage + 1;
+      const end = Math.min(state.currentPage * state.perPage, totalItems);
 
       let html = `<span class="pagination-info">Showing ${start.toLocaleString()}–${end.toLocaleString()} of ${totalItems.toLocaleString()} files</span>`;
 
@@ -897,7 +906,7 @@ TEMPLATE: str = """<!DOCTYPE html>
     }
 
     function goToPage(page) {
-      const totalPages = state.perPage === 0 ? 1 : Math.ceil(state.filteredData.length / state.perPage);
+      const totalPages = Math.ceil(state.filteredData.length / state.perPage);
       if (page < 1 || page > totalPages) return;
       state.currentPage = page;
       renderTable();
@@ -1087,7 +1096,8 @@ TEMPLATE: str = """<!DOCTYPE html>
       // Per page select
       const perPageSelect = document.getElementById('per-page-select');
       perPageSelect.addEventListener('change', (e) => {
-        state.perPage = parseInt(e.target.value, 10);
+        const val = parseInt(e.target.value, 10);
+        state.perPage = Math.min(val, 500);  // Максимум 500 строк
         state.currentPage = 1;
         renderTable();
       });
