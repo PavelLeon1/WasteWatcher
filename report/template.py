@@ -66,12 +66,17 @@ TEMPLATE: str = """<!DOCTYPE html>
       padding: 0;
     }
 
+    html {
+      overflow-x: hidden;
+    }
+
     body {
       font-family: var(--font-family);
       background-color: var(--color-bg);
       color: var(--color-text);
       line-height: 1.6;
       padding: 20px;
+      overflow-x: hidden;
     }
 
     .container {
@@ -165,9 +170,10 @@ TEMPLATE: str = """<!DOCTYPE html>
        ============================================================================= */
     .charts-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 15px;
       margin-bottom: 20px;
+      overflow-x: auto;
     }
 
     .chart-container {
@@ -175,6 +181,10 @@ TEMPLATE: str = """<!DOCTYPE html>
       padding: 20px;
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
+      height: 350px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .chart-title {
@@ -182,6 +192,13 @@ TEMPLATE: str = """<!DOCTYPE html>
       font-weight: 600;
       margin-bottom: 15px;
       color: var(--color-text);
+      flex-shrink: 0;
+    }
+
+    .chart-canvas-wrapper {
+      flex: 1;
+      position: relative;
+      min-height: 0;
     }
 
     /* =============================================================================
@@ -431,6 +448,10 @@ TEMPLATE: str = """<!DOCTYPE html>
         grid-template-columns: 1fr;
       }
 
+      .chart-container {
+        height: 300px;
+      }
+
       .controls {
         flex-direction: column;
         align-items: stretch;
@@ -533,7 +554,9 @@ TEMPLATE: str = """<!DOCTYPE html>
       </div>
       <div class="chart-container">
         <h3 class="chart-title">📊 Files by Extension</h3>
-        <canvas id="ext-chart"></canvas>
+        <div class="chart-canvas-wrapper">
+          <canvas id="ext-chart"></canvas>
+        </div>
       </div>
     </section>
 
@@ -879,7 +902,10 @@ TEMPLATE: str = """<!DOCTYPE html>
     }
 
     function renderExtChart() {
-      const ctx = document.getElementById('ext-chart');
+      const canvas = document.getElementById('ext-chart');
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       const extDist = STATS_DATA?.ext_distribution || {};
@@ -900,6 +926,11 @@ TEMPLATE: str = """<!DOCTYPE html>
         return `hsl(${hue}, 70%, 50%)`;
       });
 
+      // Destroy existing chart to prevent memory leaks and re-rendering issues
+      if (extChart) {
+        extChart.destroy();
+      }
+
       extChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -914,7 +945,8 @@ TEMPLATE: str = """<!DOCTYPE html>
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false,
+          maintainAspectRatio: true,
+          aspectRatio: 2,
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -927,6 +959,13 @@ TEMPLATE: str = """<!DOCTYPE html>
             y: {
               beginAtZero: true,
               ticks: { precision: 0 }
+            },
+            x: {
+              ticks: {
+                autoSkip: true,
+                maxRotation: 45,
+                minRotation: 45
+              }
             }
           }
         }
