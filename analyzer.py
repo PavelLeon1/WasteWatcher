@@ -213,6 +213,12 @@ def main() -> int:
     scan_duration = time.perf_counter() - start_time
     stats.scan_duration_sec = scan_duration
 
+    # ИСПРАВЛЕНИЕ БАГА #1: Пересчитываем total_size_bytes после фильтрации
+    # Генератор сканирования накапливает stats, но после фильтров файлов может быть меньше
+    stats.total_size_bytes = sum(f.size_bytes for f in files)
+    stats.total_files = len(files)
+    stats.update_total_size()  # Обновляем total_size_human
+
     logger.info(f"Сканирование завершено за {scan_duration:.2f}с")
     logger.info(f"Найдено файлов: {len(files)}")
 
