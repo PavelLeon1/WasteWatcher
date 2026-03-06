@@ -17,6 +17,7 @@ from core.scanner import scan_directory
 from report.builder import generate_report
 from utils.formatting import human_readable_size, parse_size_arg
 from utils.logging_cfg import setup_logger
+from utils.progress import ProgressReporter
 
 
 def parse_args() -> argparse.Namespace:
@@ -175,6 +176,9 @@ def main() -> int:
     # Создание объекта статистики
     stats = ScanStats()
 
+    # Создание репортёра прогресса
+    progress = ProgressReporter(verbose=args.verbose)
+
     # Запуск сканирования
     logger.info(f"Начало сканирования: {scan_path}")
     start_time = time.perf_counter()
@@ -188,6 +192,7 @@ def main() -> int:
             no_hidden=args.no_hidden,
             logger=logger,
             stats=stats,
+            progress_reporter=progress,
         )
 
         # Применение фильтров и метрик
@@ -198,7 +203,11 @@ def main() -> int:
 
     except KeyboardInterrupt:
         logger.warning("Сканирование прервано пользователем")
+        progress.done(total=stats.total_files)
         return 130
+
+    # Завершение прогресс-бара
+    progress.done(total=stats.total_files)
 
     # Время сканирования
     scan_duration = time.perf_counter() - start_time

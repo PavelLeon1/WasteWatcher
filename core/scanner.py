@@ -11,6 +11,7 @@ from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 
+from core.constants import SCANNER_BATCH_SIZE
 from core.metrics import calculate_idle_days, calculate_uselessness, format_uselessness
 from core.models import FileInfo, ScanStats
 
@@ -108,6 +109,7 @@ def scan_directory(
     logger: logging.Logger | None = None,
     stats: ScanStats | None = None,
     current_depth: int = 0,
+    progress_reporter: object | None = None,
 ) -> Iterable[FileInfo]:
     """
     Рекурсивно сканирует директорию и возвращает FileInfo через генератор.
@@ -120,6 +122,7 @@ def scan_directory(
         logger: Логгер для записи ошибок.
         stats: Объект статистики для обновления.
         current_depth: Текущая глубина (для рекурсии).
+        progress_reporter: ProgressReporter для отображения прогресса.
 
     Yields:
         FileInfo для каждого найденного файла.
@@ -187,6 +190,11 @@ def scan_directory(
         if file_info is not None:
             stats.total_files += 1
             stats.total_size_bytes += file_info.size_bytes
+
+            # Обновление прогресса
+            if progress_reporter is not None:
+                progress_reporter.update(stats.total_files, entry.path)
+
             yield file_info
 
     # Рекурсивно обрабатываем поддиректории
@@ -212,6 +220,7 @@ def scan_directory(
             logger=logger,
             stats=stats,
             current_depth=current_depth + 1,
+            progress_reporter=progress_reporter,
         )
 
 
